@@ -6,6 +6,7 @@ class MainStage extends Sprite {
     constructor() {
         super();
         window.main = this;
+
         this.field = this.addChild(new Field());
     }
 

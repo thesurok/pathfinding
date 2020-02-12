@@ -1,4 +1,5 @@
 import Sprite from '../libs/Sprite';
+import LabBuildState from '../states/LabBuildState';
 
 class Field extends Sprite {
     constructor() {
@@ -10,6 +11,8 @@ class Field extends Sprite {
         this.tileHeight = 50;
         this.tiles = [];
         this.currentPos = new PIXI.Point();
+
+        this.state = new LabBuildState();
 
         this.init();
         this.initListeners();
@@ -68,7 +71,7 @@ class Field extends Sprite {
         const row = (Math.floor(normalizedPoint.y * this.fieldHeight));
 
         const tile = this.getTileAt(row, col);
-        console.log(tile);
+        this.state.handlePointerDown(e);
         // tile.clear();
         // tile.beginFill(0xff0000);
         // tile.drawRect(-this.tileWidth / 2, - this.tileHeight / 2, this.tileWidth, this.tileHeight)
