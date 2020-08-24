@@ -1,59 +1,75 @@
 import Sprite from '../libs/Sprite';
 import LabBuildState from '../states/LabBuildState';
+import Tile from "../components/Tile";
 
 class Field extends Sprite {
     constructor() {
         super();
-        this.fieldWidth = 16;
-        this.fieldHeight = 16;
-
-        this.tileWidth = 50;
-        this.tileHeight = 50;
-        this.tiles = [];
         this.currentPos = new PIXI.Point();
+        this.state = new LabBuildState(this);
 
-        this.state = new LabBuildState();
+        this.tiles = this.buildField();
+        this.plate = this.addInteractivePlate();
 
-        this.init();
+        this.initGraphs();
         this.initListeners();
     }
 
-    init() {
-        this.buildField();
-        this.addInteractivePlate();
+    static WIDTH = 16;
+    static HEIGHT = 10;
+    static TILE = {
+        WIDTH: 50,
+        HEIGHT: 50
     }
 
+
     addInteractivePlate() {
+        const { WIDTH: fw, HEIGHT: fh } = Field;
+        const { WIDTH: tw, HEIGHT: th } = Field.TILE;
         const rect = new PIXI.Graphics()
-            .beginFill(0xff0000)
+            .beginFill(0xff0000, 1)
             .drawRect(-0.5, -0.5, 1, 1)
             .endFill();
 
         const renderer = PIXI.autoDetectRenderer();
         const texture = renderer.generateTexture(rect);
 
-        this.plate = this.addChild(new Sprite());
-        this.plate.texture = texture;
-        this.plate.interactive = true;
-        this.plate.alpha = 0.5;
+        const plate = this.addChild(Sprite.from(texture));
+        plate.interactive = true;
+        plate.scale.set(fw * tw, fh * th);
+
+        return plate;
     }
 
     buildField() {
-        for (let y = 0; y < this.fieldHeight; y++) {
-            for (let x = 0; x < this.fieldWidth; x++) {
-                const tile = new PIXI.Graphics()
-                    .beginFill(0x2d9500)
-                    .lineStyle(2, 0x000000)
-                    .drawRect(-this.tileWidth / 2, -this.tileHeight / 2, this.tileWidth, this.tileHeight)
-                    .endFill();
-
+        const { WIDTH: fw, HEIGHT: fh } = Field;
+        const { WIDTH: tw, HEIGHT: th } = Field.TILE;
+        const tiles = [];
+        for (let y = 0; y < fh; y++) {
+            for (let x = 0; x < fw; x++) {
+                const tile = new Tile();
                 this.addChild(tile);
-                tile.x = -this.fieldWidth / 2 * this.tileWidth + this.tileWidth * x + this.tileWidth / 2;
-                tile.y = -this.fieldHeight / 2 * this.tileHeight + this.tileHeight * y + this.tileHeight / 2;
+                tile.x = -fw / 2 * tw + tw * x + tw / 2;
+                tile.y = -fh / 2 * th + th * y + th / 2;
 
-                this.tiles.push(tile);
+                tiles.push(tile);
                 const txt = tile.addChild(new PIXI.Text(`x:${x} y:${y}`, { fontSize: 12 }));
                 txt.anchor.set(0.5);
+            }
+        }
+        return tiles;
+    }
+
+    initGraphs() {
+        const { WIDTH: fw, HEIGHT: fh } = Field;
+
+        for (let y = 0; y < fh; y++) {
+            for (let x = 0; x < fw; x++) {
+                const tile = this.getTileAt(y, x);
+                tile.neighbours.top = y <= 0 ? null : this.getTileAt(y - 1, x);
+                tile.neighbours.right = x >= fw - 1 ? null : this.getTileAt(y, x + 1);
+                tile.neighbours.bottom = y >= fh - 1 ? null : this.getTileAt(y + 1, x);
+                tile.neighbours.left = x <= 0 ? null : this.getTileAt(y, x - 1);
             }
         }
     }
@@ -64,26 +80,23 @@ class Field extends Sprite {
     }
 
     onPointerDown(e) {
+        this.state.handlePointerDown(e);
+    }
+
+    getRowCol(e) {
         const point = e.data.getLocalPosition(this.plate);
         const normalizedPoint = { x: point.x + 0.5, y: point.y + 0.5 };
 
-        const col = (Math.floor(normalizedPoint.x * this.fieldWidth));
-        const row = (Math.floor(normalizedPoint.y * this.fieldHeight));
-
-        const tile = this.getTileAt(row, col);
-        this.state.handlePointerDown(e);
-        // tile.clear();
-        // tile.beginFill(0xff0000);
-        // tile.drawRect(-this.tileWidth / 2, - this.tileHeight / 2, this.tileWidth, this.tileHeight)
-        // tile.endFill();
+        const col = (Math.floor(normalizedPoint.x * Field.WIDTH));
+        const row = (Math.floor(normalizedPoint.y * Field.HEIGHT));
+        return { row, col };
     }
 
     getTileAt(row, col) {
-        return this.tiles[col + (row * this.fieldWidth)];
+        return this.tiles[col + (row * Field.WIDTH)];
     }
 
     onResize(w, h) {
-        this.plate.scale.set(this.fieldWidth * this.tileWidth / this.plate.width, this.fieldHeight * this.tileHeight / this.plate.height);
     }
 }
 

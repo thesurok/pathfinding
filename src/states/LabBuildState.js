@@ -1,9 +1,11 @@
 export default class LabBuildState {
-    constructor() {
-
+    constructor(field) {
+        this.field = field;
     }
 
     handlePointerDown(e) {
-        console.log(e);
+        const { row, col } = this.field.getRowCol(e);
+        const tile = this.field.getTileAt(row, col);
+        console.log(tile.neighbours);
     }
 }
