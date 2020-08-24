@@ -1,12 +1,26 @@
 import Sprite from '../libs/Sprite';
 import LabBuildState from '../states/LabBuildState';
+import PathfindState from '../states/PathfindState';
 import Tile from "../components/Tile";
+import Pathfinder from "../utils/Pathfinder";
 
 class Field extends Sprite {
     constructor() {
         super();
         this.currentPos = new PIXI.Point();
-        this.state = new LabBuildState(this);
+
+        this.startTile = null;
+        this.finishTile = null;
+
+        this.state = null;
+        this.labBuildState = new LabBuildState(this);
+        this.pathfindState = new PathfindState(this);
+        this.setState(this.labBuildState);
+
+        this.size = {
+            width: Field.WIDTH * Tile.WIDTH,
+            height: Field.HEIGHT * Tile.HEIGHT,
+        }
 
         this.tiles = this.buildField();
         this.plate = this.addInteractivePlate();
@@ -15,17 +29,14 @@ class Field extends Sprite {
         this.initListeners();
     }
 
+    static BUILD_STATE = 0;
+    static PATHFIND_STATE = 1;
     static WIDTH = 16;
     static HEIGHT = 10;
-    static TILE = {
-        WIDTH: 50,
-        HEIGHT: 50
-    }
-
 
     addInteractivePlate() {
         const { WIDTH: fw, HEIGHT: fh } = Field;
-        const { WIDTH: tw, HEIGHT: th } = Field.TILE;
+        const { WIDTH: tw, HEIGHT: th } = Tile;
         const rect = new PIXI.Graphics()
             .beginFill(0xff0000, 1)
             .drawRect(-0.5, -0.5, 1, 1)
@@ -43,7 +54,7 @@ class Field extends Sprite {
 
     buildField() {
         const { WIDTH: fw, HEIGHT: fh } = Field;
-        const { WIDTH: tw, HEIGHT: th } = Field.TILE;
+        const { WIDTH: tw, HEIGHT: th } = Tile;
         const tiles = [];
         for (let y = 0; y < fh; y++) {
             for (let x = 0; x < fw; x++) {
@@ -53,11 +64,15 @@ class Field extends Sprite {
                 tile.y = -fh / 2 * th + th * y + th / 2;
 
                 tiles.push(tile);
-                const txt = tile.addChild(new PIXI.Text(`x:${x} y:${y}`, { fontSize: 12 }));
-                txt.anchor.set(0.5);
+                // const txt = tile.addChild(new PIXI.Text(`x:${x} y:${y}`, { fontSize: 12 }));
+                // txt.anchor.set(0.5);
             }
         }
         return tiles;
+    }
+
+    setState(state) {
+        this.state = state;
     }
 
     initGraphs() {
