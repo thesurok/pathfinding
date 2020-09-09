@@ -1,5 +1,4 @@
 import Sprite from "../libs/Sprite";
-import Field from "../components/Field";
 
 class Tile extends Sprite {
     constructor() {
@@ -8,6 +7,7 @@ class Tile extends Sprite {
         this.isFinish = false;
         this.isBlocked = false;
         this.isVisited = false;
+        this.isPath = false;
 
         this.prevNode = null;
 
@@ -27,7 +27,9 @@ class Tile extends Sprite {
     static FINISH_COLOR = 0x2d9500;
     static START_COLOR = 0xa5a5a5;
     static DEFAULT_COLOR = 0xf9f9f9;
+    static VISITED_COLOR = 0xf900f9;
     static BLOCKED_COLOR = 0x110011;
+    static PATH_COLOR = 0x555511;
 
     addView() {
         const { WIDTH: tw, HEIGHT: th } = Tile;
@@ -40,12 +42,25 @@ class Tile extends Sprite {
         return graphics;
     }
 
+    resetState() {
+        this.setFlags(false);
+        this.prevNode = null;
+    }
+
+    setFlags(val) {
+        this.isStart = this.isFinish = this.isBlocked = this.isVisited = this.isPath = val;
+    }
+
     updateView() {
         let color;
         if (this.isStart) {
             color = Tile.START_COLOR;
         } else if (this.isFinish) {
             color = Tile.FINISH_COLOR;
+        } else if (this.isVisited) {
+            color = Tile.VISITED_COLOR;
+        } else if (this.isPath) {
+            color = Tile.PATH_COLOR;
         } else {
             color = this.isBlocked ? Tile.BLOCKED_COLOR : Tile.DEFAULT_COLOR;
         }
@@ -55,6 +70,12 @@ class Tile extends Sprite {
             .lineStyle(2, 0x000000)
             .drawRect(-tw / 2, -th / 2, tw, th)
             .endFill();
+    }
+
+    markAsVisited(delay) {
+        this.isVisited = true;
+
+        this.updateView();
     }
 }
 

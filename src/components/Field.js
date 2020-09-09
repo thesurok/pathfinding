@@ -71,6 +71,43 @@ class Field extends Sprite {
         return tiles;
     }
 
+    findPathBFS() {
+        const queue = [];
+        const start = this.startTile;
+        const finish = this.finishTile;
+        let delay = 0;
+
+        queue.push(start);
+
+        while (queue.length) {
+            const currentLocation = queue.shift();
+            if (currentLocation.isFinish) return currentLocation;
+            currentLocation.markAsVisited(delay);
+            for (const key in currentLocation.neighbours) {
+                if (currentLocation.neighbours.hasOwnProperty(key)) {
+                    const neighbour = currentLocation.neighbours[key];
+
+                    if (neighbour && !neighbour.isVisited && !neighbour.isBlocked) {
+                        queue.push(neighbour);
+                        neighbour.prevNode = currentLocation;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    visualizePath(finish) {
+        let node = finish;
+        while (node.prevNode) {
+            node = node.prevNode;
+            node.setFlags(false);
+            node.isPath = true;
+            node.updateView();
+        }
+    }
+
     setState(state) {
         this.state = state;
     }

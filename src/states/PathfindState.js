@@ -18,7 +18,6 @@ export default class PathfindState extends PIXI.utils.EventEmitter {
             this.setFinishTile(tile);
         }
 
-
         tile.updateView();
     }
 

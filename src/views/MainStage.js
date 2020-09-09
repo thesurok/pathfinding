@@ -21,6 +21,7 @@ class MainStage extends Sprite {
         this.stateButton.on("switch-state", this.handleSwitchState, this);
         this.field.pathfindState.on("toggle-pathfind-button", this.togglePathfindButton, this);
         this.field.labBuildState.on("toggle-pathfind-button", this.togglePathfindButton, this);
+        this.startButton.on("start", this.findPath, this);
     }
 
     togglePathfindButton(visible) {
@@ -30,6 +31,11 @@ class MainStage extends Sprite {
     handleSwitchState(state) {
         const { field } = this;
         field.setState(state === Field.BUILD_STATE ? field.labBuildState : field.pathfindState);
+    }
+
+    findPath() {
+        const finish = this.field.findPathBFS();
+        this.field.visualizePath(finish);
     }
 
     onResize() {

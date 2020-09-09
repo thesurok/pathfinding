@@ -1,7 +1,7 @@
 import Field from "../components/Field";
 
 class Pathfinder {
-    constructor() {
+    constructor(grid, start, finish) {
 
     }
 }
